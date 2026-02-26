@@ -189,10 +189,16 @@ router.post("/addWeight", async (req, res) => {
   }
   const user = await User.findOne({ token });
 
+  weight = parseFloat(weight.toString().replace(",", "."));
+  if (isNaN(weight)) {
+    return res.json({ result: false, error: "Invalid weight value" });
+  }
+
   if (!user) {
     res.json({ result: false, error: "User not founds" });
     return;
   }
+
   const newWeight = {
     weight,
     date: new Date(),
@@ -297,7 +303,7 @@ router.post("/changeForgottenPassword", (req, res) => {
         user
           .save()
           .then(() =>
-            res.json({ result: true, message: "Mot de passe modifié" })
+            res.json({ result: true, message: "Mot de passe modifié" }),
           );
       } else {
         res.json({ result: false, data: "Le token est pas ok" });
