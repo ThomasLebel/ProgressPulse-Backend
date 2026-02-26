@@ -74,7 +74,7 @@ router.delete("/deleteExercise", (req, res) => {
       return res.status(404).json({ error: "Séance non trouvée" });
     }
     const exerciseIndex = workout.exercises.findIndex(
-      (exercise) => exercise.exercise.toString() === exerciseID
+      (exercise) => exercise.exercise.toString() === exerciseID,
     );
     if (exerciseIndex === -1) {
       return res.status(404).json({ error: "Exercice non trouvé" });
@@ -120,7 +120,7 @@ router.put("/updateSets", (req, res) => {
 });
 
 router.put("/updateName", async (req, res) => {
-  const { workoutID, newWorkoutName, token } = req.body;
+  const { workoutID, newWorkoutName, newIcon, token } = req.body;
   if (!workoutID || !newWorkoutName || !token) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
@@ -130,8 +130,8 @@ router.put("/updateName", async (req, res) => {
     res.json({ result: false, error: "Workout not found" });
     return;
   }
-  if (userWorkout.name === newWorkoutName) {
-    res.json({ result: false, error: "Workoutname has not changed" });
+  if (userWorkout.name === newWorkoutName && userWorkout.image === newIcon) {
+    res.json({ result: false, error: "Nothing has changed" });
     return;
   }
 
@@ -144,10 +144,11 @@ router.put("/updateName", async (req, res) => {
   if (historyUser.length > 0) {
     await History.updateMany(
       { user: user._id, workoutID },
-      { workoutName: newWorkoutName }
+      { workoutName: newWorkoutName },
     );
   }
   userWorkout.name = newWorkoutName;
+  userWorkout.image = newIcon;
   userWorkout.save().then(() => {
     res.json({ result: true });
   });

@@ -182,7 +182,7 @@ router.post("/changeUsername", async (req, res) => {
 
 //Pour ajouter un poids
 router.post("/addWeight", async (req, res) => {
-  const { weight, token } = req.body;
+  let { weight, token } = req.body;
   if (!weight || !token) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
@@ -212,11 +212,22 @@ router.post("/addWeight", async (req, res) => {
 // Route pour ajouter un objectif de poids
 
 router.post("/weightTarget", async (req, res) => {
-  const { token, weight, date, objectif, initialWeight } = req.body;
+  let { token, weight, date, objectif, initialWeight } = req.body;
   if (!token || !weight || !date || !objectif || !initialWeight) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
+
+  weight = parseFloat(weight.toString().replace(",", "."));
+  if (isNaN(weight)) {
+    return res.json({ result: false, error: "Invalid weight value" });
+  }
+
+  initialWeight = parseFloat(initialWeight.toString().replace(",", "."));
+  if (isNaN(initialWeight)) {
+    return res.json({ result: false, error: "Invalid initial weight value" });
+  }
+
   const user = await User.findOne({ token });
 
   if (!user) {
@@ -231,6 +242,7 @@ router.post("/weightTarget", async (req, res) => {
     initialWeight: initialWeight,
   };
   user.target = weightTarget;
+  user.weight.push({ weight: initialWeight, date: new Date() });
   user.save().then(() => {
     res.json({ result: true, weightTarget });
   });
